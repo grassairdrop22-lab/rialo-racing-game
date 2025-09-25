@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rialo Logo Racing Game</title>
+  <style>
+    body { background: #111; margin: 0; }
+    canvas { display: block; margin: 40px auto 0 auto; background: #ded8cb; }
+    #score, #speed, #pass {
+      position: fixed; color: #111; font-size: 20px; font-family: monospace; z-index: 3;
+    }
+    #score { top: 12px; left: 12px; }
+    #speed { bottom: 20px; left: 50%; transform: translateX(-50%); }
+    #pass { bottom: 24px; left: 24px; background: #cbe54e; border-radius: 10px; padding: 6px 12px; }
+  </style>
+</head>
+<body>
+  <div id="score">Score: 0</div>
+  <div id="speed">Speed: 5</div>
+  <div id="pass">⏭ Pass</div>
+  <canvas id="gameCanvas" width="360" height="600"></canvas>
+  <script>
+    // Setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Load your logo (save it inside "images/logo.png" for example)
+    const logo = new Image();
+    logo.src = './images/rialo_logo.png'; // <-- put your logo file here
+
+    let player = { 
+      x: canvas.width/2, 
+      y: canvas.height-120, 
+      w: 45,  // smaller width (bike style)
+      h: 45,  // smaller height
+      speed: 5 
+    };
+
+    let score = 0;
+    let leftDown = false, rightDown = false;
+
+    // Controls
+    document.addEventListener('keydown', e => {
+      if(e.key === 'ArrowLeft') leftDown = true;
+      if(e.key === 'ArrowRight') rightDown = true;
+    });
+    document.addEventListener('keyup', e => {
+      if(e.key === 'ArrowLeft') leftDown = false;
+      if(e.key === 'ArrowRight') rightDown = false;
+    });
+
+    function drawRoad() {
+      ctx.fillStyle = '#ebead5';
+      ctx.fillRect(80, 0, 200, 600);
+      ctx.strokeStyle = '#999';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.setLineDash([30, 30]);
+      ctx.moveTo(canvas.width/2, 0);
+      ctx.lineTo(canvas.width/2, 600);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function loop() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      // Road
+      drawRoad();
+
+      // Player logo (bike style)
+      ctx.drawImage(logo, player.x - player.w/2, player.y, player.w, player.h);
+
+      // Controls + bounds
+      if(leftDown) player.x -= player.speed;
+      if(rightDown) player.x += player.speed;
+      player.x = Math.max(80 + player.w/2, Math.min(canvas.width-80-player.w/2, player.x));
+
+      // Score and speed
+      score += 1;
+      document.getElementById('score').textContent = 'Score: ' + score;
+      document.getElementById('speed').textContent = 'Speed: ' + player.speed;
+
+      // Loop
+      requestAnimationFrame(loop);
+    }
+
+    logo.onload = () => loop();
+    document.getElementById('pass').onclick = () => alert('Level passed!');
+  </script>
+</body>
+</html>
